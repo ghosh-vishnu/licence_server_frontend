@@ -104,7 +104,7 @@ export default function SuperAdminLayout() {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/login', { replace: true })
     toast.success('Logged out')
   }
 

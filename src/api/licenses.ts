@@ -13,8 +13,15 @@ export interface SoftwareLicense {
   status: string
   created_at: string
   module_access?: Record<string, string[]>
+  role_limits?: RoleLimits
   location?: string | null
   description?: string | null
+}
+
+export interface RoleLimits {
+  max_super_admins: number
+  max_company_admins: number
+  max_users: number
 }
 
 export interface CreateSoftwareLicenseData {
@@ -27,6 +34,7 @@ export interface CreateSoftwareLicenseData {
   location?: string
   description?: string
   module_access?: Record<string, string[]>
+  role_limits?: RoleLimits
   status?: string
 }
 

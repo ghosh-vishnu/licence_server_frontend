@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface User {
   username: string
@@ -24,9 +24,16 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (user, accessToken, refreshToken) =>
         set({ user, accessToken, refreshToken, isAuthenticated: true }),
-      logout: () =>
-        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false }),
+      logout: () => {
+        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
+        try {
+          sessionStorage.removeItem('license-admin-auth')
+          localStorage.removeItem('license-admin-auth')
+        } catch {
+          /* no-op */
+        }
+      },
     }),
-    { name: 'license-admin-auth' }
+    { name: 'license-admin-auth', storage: createJSONStorage(() => sessionStorage) }
   )
 )

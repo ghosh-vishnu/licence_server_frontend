@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
-import { companiesAPI, Subscriber } from '../api/companies'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { companiesAPI, Subscriber, Plan } from '../api/companies'
 import { licensesAPI, type SoftwareLicense as SL, type CreateSoftwareLicenseData } from '../api/licenses'
+import { extractAuthError } from '../api/errorUtils'
+import { createLicenseSchema, type CreateLicenseFormValues } from '../schemas/licenseForm'
+import { RoleAllocationCard } from '../components/RoleAllocationCard'
 import toast from 'react-hot-toast'
 
 export default function SuperAdminUserLicense() {
   const [licenses, setLicenses] = useState<SL[]>([])
   const [companies, setCompanies] = useState<Subscriber[]>([])
+  const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [viewLicense, setViewLicense] = useState<SL | null>(null)
@@ -15,11 +21,16 @@ export default function SuperAdminUserLicense() {
   const load = async () => {
     setLoading(true)
     try {
-      const [lic, comp] = await Promise.all([licensesAPI.list(), companiesAPI.list()])
+      const [lic, comp, pl] = await Promise.all([
+        licensesAPI.list(),
+        companiesAPI.list(),
+        companiesAPI.getPlans(),
+      ])
       setLicenses(Array.isArray(lic) ? lic : [])
       setCompanies(Array.isArray(comp) ? comp : [])
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || 'Failed to load')
+      setPlans(Array.isArray(pl) ? pl : [])
+    } catch (e: unknown) {
+      toast.error(extractAuthError(e, 'Failed to load'))
     } finally {
       setLoading(false)
     }
@@ -34,8 +45,8 @@ export default function SuperAdminUserLicense() {
       const res = await companiesAPI.generateLicense(sub.id)
       setGenerateFor(sub)
       setLicenseKey(res.license_key)
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || 'Failed to generate license')
+    } catch (e: unknown) {
+      toast.error(extractAuthError(e, 'Failed to generate license'))
     }
   }
 
@@ -44,8 +55,8 @@ export default function SuperAdminUserLicense() {
       await licensesAPI.activate(lic.id)
       toast.success('License activated')
       load()
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || 'Failed')
+    } catch (e: unknown) {
+      toast.error(extractAuthError(e, 'Failed'))
     }
   }
 
@@ -54,8 +65,8 @@ export default function SuperAdminUserLicense() {
       await licensesAPI.disable(lic.id)
       toast.success('License disabled')
       load()
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || 'Failed')
+    } catch (e: unknown) {
+      toast.error(extractAuthError(e, 'Failed'))
     }
   }
 
@@ -65,8 +76,8 @@ export default function SuperAdminUserLicense() {
       await licensesAPI.delete(lic.id)
       toast.success('License deleted')
       load()
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || 'Failed')
+    } catch (e: unknown) {
+      toast.error(extractAuthError(e, 'Failed'))
     }
   }
 
@@ -156,6 +167,7 @@ export default function SuperAdminUserLicense() {
       {showCreate && (
         <CreateLicenseModal
           companies={companies}
+          plans={plans}
           onClose={() => setShowCreate(false)}
           onCreated={() => {
             setShowCreate(false)
@@ -177,92 +189,173 @@ export default function SuperAdminUserLicense() {
 
 function CreateLicenseModal({
   companies,
+  plans,
   onClose,
   onCreated,
 }: {
   companies: Subscriber[]
+  plans: Plan[]
   onClose: () => void
   onCreated: () => void
 }) {
-  const [companyId, setCompanyId] = useState('')
-  const [productName, setProductName] = useState('Minitab')
-  const [purchaseDate, setPurchaseDate] = useState('')
-  const [expirationDate, setExpirationDate] = useState('')
-  const [totalUserAccess, setTotalUserAccess] = useState(10)
-  const [location, setLocation] = useState('')
-  const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
+  const planMap = new Map(plans.map((p) => [p.id, p.max_users]))
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!companyId) {
-      toast.error('Select company')
-      return
-    }
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<CreateLicenseFormValues>({
+    resolver: yupResolver(createLicenseSchema),
+    mode: 'onChange',
+    defaultValues: {
+      company: '',
+      product_name: 'Minitab',
+      purchase_date: '',
+      expiration_date: '',
+      max_super_admins: 1,
+      max_company_admins: 0,
+      max_users: 10,
+      location: '',
+      description: '',
+    },
+  })
+
+  const companyId = watch('company')
+  const selectedCompany = companies.find((c) => c.id === companyId)
+  const planLimit = selectedCompany?.plan ? planMap.get(selectedCompany.plan) ?? null : null
+
+  const sa = watch('max_super_admins') ?? 0
+  const ca = watch('max_company_admins') ?? 0
+  const u = watch('max_users') ?? 0
+  const totalAllocation =
+    (typeof sa === 'number' ? sa : parseInt(String(sa), 10) || 0) +
+    (typeof ca === 'number' ? ca : parseInt(String(ca), 10) || 0) +
+    (typeof u === 'number' ? u : parseInt(String(u), 10) || 0)
+
+  const exceedsPlan = planLimit != null && planLimit > 0 && totalAllocation > planLimit
+  const canSubmit = isValid && !exceedsPlan
+
+  const onSubmit = async (data: CreateLicenseFormValues) => {
     setLoading(true)
     try {
-      const data: CreateSoftwareLicenseData = {
-        company: companyId,
-        product_name: productName,
-        total_user_access: totalUserAccess,
+      const payload: CreateSoftwareLicenseData = {
+        company: data.company,
+        product_name: (data.product_name || 'Minitab').trim().slice(0, 100),
+        role_limits: {
+          max_super_admins: Math.max(0, Math.min(100, Number(data.max_super_admins) || 0)),
+          max_company_admins: Math.max(0, Math.min(1000, Number(data.max_company_admins) || 0)),
+          max_users: Math.max(1, Math.min(100000, Number(data.max_users) || 10)),
+        },
       }
-      if (purchaseDate) data.purchase_date = purchaseDate
-      if (expirationDate) data.expiration_date = expirationDate
-      if (location) data.location = location
-      if (description) data.description = description
-      await licensesAPI.create(data)
+      if (data.purchase_date) payload.purchase_date = data.purchase_date
+      if (data.expiration_date) payload.expiration_date = data.expiration_date
+      if (data.location?.trim()) payload.location = data.location.trim().slice(0, 255)
+      if (data.description?.trim()) payload.description = data.description.trim().slice(0, 500)
+      await licensesAPI.create(payload)
       toast.success('License created')
       onCreated()
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Failed to create')
+    } catch (err: unknown) {
+      toast.error(extractAuthError(err, 'Failed to create'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-semibold mb-4">Create License</h3>
-        <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto" onClick={onClose}>
+      <div
+        className="bg-white rounded-xl shadow-2xl max-w-lg w-full my-8 mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-6 py-5 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Create License</h3>
+          <p className="text-sm text-gray-500 mt-0.5">Define role-based allocation for the company</p>
+        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company *</label>
-            <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} className="w-full px-3 py-2 border rounded-md" required>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Company *</label>
+            <select
+              {...register('company')}
+              className={`block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${errors.company ? 'border-red-500' : ''}`}
+            >
               <option value="">Select Company</option>
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+            {errors.company && <p className="mt-1 text-sm text-red-600">{errors.company.message}</p>}
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-            <input value={productName} onChange={(e) => setProductName(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Product Name *</label>
+            <input
+              {...register('product_name')}
+              maxLength={100}
+              className={`block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${errors.product_name ? 'border-red-500' : ''}`}
+              placeholder="Minitab"
+            />
+            {errors.product_name && <p className="mt-1 text-sm text-red-600">{errors.product_name.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
-              <input type="date" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Purchase Date</label>
+              <input
+                type="date"
+                {...register('purchase_date')}
+                className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Expiration Date</label>
-              <input type="date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Expiration Date</label>
+              <input
+                type="date"
+                {...register('expiration_date')}
+                className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
             </div>
           </div>
+
+          <RoleAllocationCard register={register} watch={watch} errors={errors} planLimit={planLimit} />
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Total User Access</label>
-            <input type="number" min={1} value={totalUserAccess} onChange={(e) => setTotalUserAccess(parseInt(e.target.value) || 10)} className="w-full px-3 py-2 border rounded-md" />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
+            <input
+              {...register('location')}
+              className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              placeholder="e.g. India"
+              maxLength={255}
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input value={location} onChange={(e) => setLocation(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="e.g. India" />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <textarea
+              {...register('description')}
+              rows={2}
+              className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              placeholder="Optional notes"
+              maxLength={500}
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <input value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
-          </div>
-          <div className="flex gap-2 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={loading} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !canSubmit}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating...' : 'Create'}
+            </button>
           </div>
         </form>
       </div>
@@ -280,8 +373,8 @@ function ViewLicenseModal({ license, onClose, onExtend }: { license: SL; onClose
       await licensesAPI.extend(license.id, { extend_days: extendDays })
       toast.success('License extended')
       onExtend()
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || 'Failed')
+    } catch (e: unknown) {
+      toast.error(extractAuthError(e, 'Failed'))
     } finally {
       setExtending(false)
     }
@@ -295,7 +388,15 @@ function ViewLicenseModal({ license, onClose, onExtend }: { license: SL; onClose
           <div><dt className="text-gray-500">License Key</dt><dd className="font-mono">{license.license_key}</dd></div>
           <div><dt className="text-gray-500">Company</dt><dd>{license.company_name}</dd></div>
           <div><dt className="text-gray-500">Product</dt><dd>{license.product_name}</dd></div>
-          <div><dt className="text-gray-500">User Access</dt><dd>{license.total_user_access}</dd></div>
+          <div><dt className="text-gray-500">Total User Access</dt><dd>{license.total_user_access}</dd></div>
+          {license.role_limits && (
+            <div>
+              <dt className="text-gray-500">Role Allocation</dt>
+              <dd className="mt-1 text-gray-700">
+                Super Admins: {license.role_limits.max_super_admins}, Admins: {license.role_limits.max_company_admins}, Users: {license.role_limits.max_users}
+              </dd>
+            </div>
+          )}
           <div><dt className="text-gray-500">Purchase Date</dt><dd>{license.purchase_date || '-'}</dd></div>
           <div><dt className="text-gray-500">Expiration</dt><dd>{license.expiration_date ? new Date(license.expiration_date).toLocaleDateString() : '-'}</dd></div>
           <div><dt className="text-gray-500">Status</dt><dd>{license.status}</dd></div>

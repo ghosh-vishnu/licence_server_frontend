@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useAuthStore } from '../store/authStore'
 import { authAPI } from '../api/auth'
+import { extractAuthError } from '../api/errorUtils'
 import toast from 'react-hot-toast'
 
 interface LoginForm {
@@ -24,9 +25,8 @@ export default function Login() {
       setAuth(res.user, res.access, res.refresh)
       toast.success('Login successful')
       navigate('/super-admin')
-    } catch (err: any) {
-      const msg = err.response?.data?.error || err.response?.data?.detail || 'Login failed'
-      toast.error(msg)
+    } catch (err: unknown) {
+      toast.error(extractAuthError(err, 'Login failed'))
     } finally {
       setLoading(false)
     }
@@ -45,6 +45,7 @@ export default function Login() {
               <input
                 {...register('username', { required: 'Required' })}
                 type="text"
+                autoComplete="username"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="superadmin@gmail.com"
               />
@@ -56,6 +57,7 @@ export default function Login() {
               <input
                 {...register('password', { required: 'Required' })}
                 type="password"
+                autoComplete="current-password"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
