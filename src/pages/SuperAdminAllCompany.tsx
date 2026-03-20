@@ -37,57 +37,110 @@ export default function SuperAdminAllCompany() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <h1 className="text-lg sm:text-xl font-semibold text-gray-900">All Company</h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">All Company</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Manage registered companies</p>
+        </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors"
         >
           + Add Company
         </button>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Loading...</p>
+        <div className="bg-white rounded-xl border border-gray-200">
+          <div className="px-6 py-3 border-b border-gray-100">
+            <div className="flex gap-16">
+              <div className="admin-skeleton h-3 w-16" />
+              <div className="admin-skeleton h-3 w-12" />
+              <div className="admin-skeleton h-3 w-14" />
+              <div className="admin-skeleton h-3 w-14" />
+              <div className="admin-skeleton h-3 w-14" />
+            </div>
+          </div>
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center gap-16 px-6 py-4 border-b border-gray-100 last:border-b-0">
+              <div className="admin-skeleton h-4 w-32" />
+              <div className="admin-skeleton h-4 w-20" />
+              <div className="admin-skeleton h-4 w-16" />
+              <div className="admin-skeleton h-4 w-24" />
+              <div className="flex gap-2">
+                <div className="admin-skeleton h-6 w-12 rounded-md" />
+                <div className="admin-skeleton h-6 w-14 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : companies.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 py-16 flex flex-col items-center justify-center">
+          <svg className="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <p className="text-sm font-medium text-gray-900 mb-1">No companies yet</p>
+          <p className="text-sm text-gray-500 mb-4">Add your first company to get started.</p>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors"
+          >
+            + Add Company
+          </button>
+        </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-          <table className="min-w-[600px] w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expiry</th>
-                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <table className="min-w-[600px] w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Code</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Expiry</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {companies.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-3 sm:px-4 py-3 text-sm text-gray-900">{c.name}</td>
-                  <td className="px-3 sm:px-4 py-3 text-sm text-gray-600">{c.company_code || '-'}</td>
-                  <td className="px-3 sm:px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      c.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50/50 last:border-b-0">
+                  <td className="px-6 py-3.5 text-sm font-medium text-gray-900">{c.name}</td>
+                  <td className="px-6 py-3.5 text-sm text-gray-500">{c.company_code || '-'}</td>
+                  <td className="px-6 py-3.5">
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${
+                      c.status === 'active'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : 'bg-gray-100 text-gray-600'
                     }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        c.status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'
+                      }`} />
                       {c.status}
                     </span>
                   </td>
-                  <td className="px-3 sm:px-4 py-3 text-sm text-gray-600">
+                  <td className="px-6 py-3.5 text-sm text-gray-500">
                     {new Date(c.expiry).toLocaleDateString()}
                   </td>
-                  <td className="px-3 sm:px-4 py-3 flex flex-wrap gap-2">
-                    <button onClick={() => setEditing(c)} className="text-sm text-blue-600 hover:text-blue-700">Edit</button>
-                    <button onClick={() => handleDelete(c)} className="text-sm text-red-600 hover:text-red-700">Delete</button>
+                  <td className="px-6 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setEditing(c)}
+                        className="text-xs font-medium px-2.5 py-1 rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(c)}
+                        className="text-xs font-medium px-2.5 py-1 rounded-md text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {companies.length === 0 && (
-            <p className="px-4 py-8 text-center text-gray-500">No companies yet. Add one to get started.</p>
-          )}
         </div>
       )}
 
@@ -143,30 +196,57 @@ function ViewCompanyModal({
   const d = data as Subscriber & { address_line1?: string; GST_NO?: string }
   const showExpiry = d?.expiry ?? company.expiry
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4 overflow-y-auto min-h-screen" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 my-4 sm:my-8 mx-2" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-base sm:text-lg font-semibold mb-4">View Company</h3>
-        {loading ? (
-          <p className="text-gray-500">Loading...</p>
-        ) : error ? (
-          <p className="text-red-600">{error}</p>
-        ) : d ? (
-          <dl className="space-y-3 text-sm">
-            <div><dt className="text-gray-500">Name</dt><dd className="font-medium">{d.name}</dd></div>
-            <div><dt className="text-gray-500">Code</dt><dd>{d.company_code || '-'}</dd></div>
-            <div><dt className="text-gray-500">Email</dt><dd>{d.email || '-'}</dd></div>
-            <div><dt className="text-gray-500">Phone</dt><dd>{d.phone || '-'}</dd></div>
-            <div><dt className="text-gray-500">Address</dt><dd>{(d as any).address_line1 || d.address || '-'}</dd></div>
-            <div><dt className="text-gray-500">Region (State)</dt><dd>{d.state || '-'}</dd></div>
-            <div><dt className="text-gray-500">Country</dt><dd>{d.country || '-'}</dd></div>
-            <div><dt className="text-gray-500">Time Zone</dt><dd>{d.time_zone || '-'}</dd></div>
-            <div><dt className="text-gray-500">GST / License No</dt><dd>{(d as any).GST_NO || d.tax_id || '-'}</dd></div>
-            <div><dt className="text-gray-500">Status</dt><dd><span className={`px-2 py-0.5 rounded text-xs ${d.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>{d.status}</span></dd></div>
-            <div><dt className="text-gray-500">Expiry</dt><dd>{showExpiry ? new Date(showExpiry).toLocaleDateString() : '-'}</dd></div>
-          </dl>
-        ) : null}
-        <div className="mt-6">
-          <button onClick={onClose} className="w-full px-4 py-2 border rounded-md hover:bg-gray-50">Close</button>
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal__header">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">View Company</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Company details overview</p>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div className="admin-modal__body">
+          {loading ? (
+            <div className="space-y-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex flex-col gap-1.5">
+                  <div className="admin-skeleton h-3 w-20" />
+                  <div className="admin-skeleton h-4 w-48" />
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <p className="text-sm text-red-600">{error}</p>
+          ) : d ? (
+            <dl className="space-y-4">
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Name</dt><dd className="text-sm font-medium text-gray-900 mt-0.5">{d.name}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Code</dt><dd className="text-sm text-gray-700 mt-0.5">{d.company_code || '-'}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Email</dt><dd className="text-sm text-gray-700 mt-0.5">{d.email || '-'}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</dt><dd className="text-sm text-gray-700 mt-0.5">{d.phone || '-'}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Address</dt><dd className="text-sm text-gray-700 mt-0.5">{(d as any).address_line1 || d.address || '-'}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Region (State)</dt><dd className="text-sm text-gray-700 mt-0.5">{d.state || '-'}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Country</dt><dd className="text-sm text-gray-700 mt-0.5">{d.country || '-'}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Time Zone</dt><dd className="text-sm text-gray-700 mt-0.5">{d.time_zone || '-'}</dd></div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">GST / License No</dt><dd className="text-sm text-gray-700 mt-0.5">{(d as any).GST_NO || d.tax_id || '-'}</dd></div>
+              <div>
+                <dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Status</dt>
+                <dd className="mt-1">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${
+                    d.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${d.status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                    {d.status}
+                  </span>
+                </dd>
+              </div>
+              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Expiry</dt><dd className="text-sm text-gray-700 mt-0.5">{showExpiry ? new Date(showExpiry).toLocaleDateString() : '-'}</dd></div>
+            </dl>
+          ) : null}
+        </div>
+        <div className="admin-modal__footer">
+          <button onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors">Close</button>
         </div>
       </div>
     </div>
@@ -238,60 +318,72 @@ function CreateCompanyModal({
     }
   }
 
+  const inputClasses = "w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow"
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4 overflow-y-auto min-h-screen" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 my-4 sm:my-8 mx-2" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-base sm:text-lg font-semibold mb-4">Add Company</h3>
-        <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal__header">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 border rounded-md text-base" placeholder="e.g. New Company Ltd" required />
+            <h3 className="text-lg font-semibold text-gray-900">Add Company</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Register a new company account</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="admin-modal__body space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Region (State)</label>
-              <input value={state} onChange={(e) => setState(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="e.g. Asia" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Company Name *</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClasses} placeholder="e.g. New Company Ltd" required />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Region (State)</label>
+                <input value={state} onChange={(e) => setState(e.target.value)} className={inputClasses} placeholder="e.g. Asia" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
+                <input value={country} onChange={(e) => setCountry(e.target.value)} className={inputClasses} placeholder="e.g. India" />
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-              <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="e.g. India" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Time Zone</label>
+              <input value={timeZone} onChange={(e) => setTimeZone(e.target.value)} className={inputClasses} placeholder="Asia/Kolkata" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Address (Location)</label>
+              <input value={address} onChange={(e) => setAddress(e.target.value)} className={inputClasses} placeholder="Main Street, City" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">License No (tax_id / GST)</label>
+              <input value={taxId} onChange={(e) => setTaxId(e.target.value)} className={inputClasses} placeholder="29XXXXX1234X1XX" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone (Mobile No)</label>
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClasses} placeholder="9122389911" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClasses} placeholder="company@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Admin Email</label>
+              <input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className={inputClasses} placeholder="company@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <input type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className={inputClasses} placeholder="Admin password" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
+              <input type="password" value={adminConfirmPassword} onChange={(e) => setAdminConfirmPassword(e.target.value)} className={inputClasses} placeholder="Confirm admin password" />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Time Zone</label>
-            <input value={timeZone} onChange={(e) => setTimeZone(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="Asia/Kolkata" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address (Location)</label>
-            <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="Main Street, City" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">License No (tax_id / GST)</label>
-            <input value={taxId} onChange={(e) => setTaxId(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="29XXXXX1234X1XX" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone (Mobile No)</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="9122389911" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="company@example.com" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Admin Email</label>
-            <input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="company@example.com" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="Admin password" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-            <input type="password" value={adminConfirmPassword} onChange={(e) => setAdminConfirmPassword(e.target.value)} className="w-full px-3 py-2 border rounded-md" placeholder="Confirm admin password" />
-          </div>
-          <div className="flex flex-col-reverse sm:flex-row gap-2 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={loading} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
+          <div className="admin-modal__footer">
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors">Cancel</button>
+            <button type="submit" disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
           </div>
         </form>
       </div>
@@ -345,65 +437,77 @@ function EditCompanyModal({
     }
   }
 
+  const inputClasses = "w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow"
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4 overflow-y-auto min-h-screen" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 my-4 sm:my-8 mx-2" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-base sm:text-lg font-semibold mb-4">Edit Company</h3>
-        <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal__header">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 border rounded-md" required />
+            <h3 className="text-lg font-semibold text-gray-900">Edit Company</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Update company information</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="admin-modal__body space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Company Name *</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClasses} required />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClasses} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClasses} />
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Address</label>
+              <input value={address} onChange={(e) => setAddress(e.target.value)} className={inputClasses} />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Region (State)</label>
+                <input value={state} onChange={(e) => setState(e.target.value)} className={inputClasses} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
+                <input value={country} onChange={(e) => setCountry(e.target.value)} className={inputClasses} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Time Zone</label>
+                <input value={timeZone} onChange={(e) => setTimeZone(e.target.value)} className={inputClasses} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">GST/CIN</label>
+                <input value={taxId} onChange={(e) => setTaxId(e.target.value)} className={inputClasses} />
+              </div>
+            </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Region (State)</label>
-              <input value={state} onChange={(e) => setState(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Admin Email</label>
+              <input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className={inputClasses} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-              <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClasses}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="suspended">Suspended</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Time Zone</label>
-              <input value={timeZone} onChange={(e) => setTimeZone(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">GST/CIN</label>
-              <input value={taxId} onChange={(e) => setTaxId(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Admin Email</label>
-            <input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-3 py-2 border rounded-md">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="suspended">Suspended</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-          <div className="flex flex-col-reverse sm:flex-row gap-2 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={loading} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">{loading ? 'Saving...' : 'Save'}</button>
+          <div className="admin-modal__footer">
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors">Cancel</button>
+            <button type="submit" disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors disabled:opacity-50">{loading ? 'Saving...' : 'Save'}</button>
           </div>
         </form>
       </div>

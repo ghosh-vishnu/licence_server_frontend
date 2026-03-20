@@ -15,7 +15,42 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3500,
+          style: {
+            background: 'rgba(15, 10, 40, 0.92)',
+            backdropFilter: 'blur(16px)',
+            color: '#ede9fe',
+            border: '1px solid rgba(139, 92, 246, 0.2)',
+            borderRadius: '14px',
+            padding: '14px 20px',
+            fontSize: '14.5px',
+            fontWeight: 500,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.04) inset',
+            maxWidth: '380px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#34d399',
+              secondary: '#0f0a28',
+            },
+            style: {
+              border: '1px solid rgba(52, 211, 153, 0.25)',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#f87171',
+              secondary: '#0f0a28',
+            },
+            style: {
+              border: '1px solid rgba(248, 113, 113, 0.25)',
+            },
+          },
+        }}
+      />
       <Routes>
         <Route
           path="/login"

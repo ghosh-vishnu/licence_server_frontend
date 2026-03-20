@@ -83,84 +83,144 @@ export default function SuperAdminUserLicense() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">User License</h1>
-          <p className="text-sm text-gray-500 mt-1">Software licenses and JWT keys for companies</p>
+          <p className="text-sm text-gray-500 mt-0.5">Software licenses and JWT keys for companies</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors"
         >
           + Create License
         </button>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Loading...</p>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100 grid grid-cols-7 gap-4">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="admin-skeleton h-3 w-16 rounded" />
+            ))}
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="px-5 py-4 border-b border-gray-100 grid grid-cols-7 gap-4 items-center">
+              <div className="admin-skeleton h-4 w-24" />
+              <div className="admin-skeleton h-4 w-20" />
+              <div className="admin-skeleton h-4 w-16" />
+              <div className="admin-skeleton h-4 w-10" />
+              <div className="admin-skeleton h-4 w-20" />
+              <div className="admin-skeleton h-4 w-14" />
+              <div className="admin-skeleton h-4 w-28" />
+            </div>
+          ))}
+        </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">License Id</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Access</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expiry</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table className="min-w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">License ID</th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Company</th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Product</th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">User Access</th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Expiry</th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {licenses.map((lic) => (
-                <tr key={lic.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-mono text-gray-700">{lic.license_key}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{lic.company_name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{lic.product_name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{lic.total_user_access}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {lic.expiration_date ? new Date(lic.expiration_date).toLocaleDateString() : '-'}
+                <tr key={lic.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <td className="px-5 py-3.5 text-sm font-mono text-gray-600">{lic.license_key}</td>
+                  <td className="px-5 py-3.5 text-sm font-medium text-gray-900">{lic.company_name}</td>
+                  <td className="px-5 py-3.5 text-sm text-gray-500">{lic.product_name}</td>
+                  <td className="px-5 py-3.5 text-sm text-gray-500">{lic.total_user_access}</td>
+                  <td className="px-5 py-3.5 text-sm text-gray-500">
+                    {lic.expiration_date ? new Date(lic.expiration_date).toLocaleDateString() : '—'}
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      lic.status === 'active' ? 'bg-green-100 text-green-800' :
-                      lic.status === 'disabled' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${
+                      lic.status === 'active'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : lic.status === 'disabled'
+                        ? 'bg-gray-100 text-gray-600'
+                        : 'bg-amber-50 text-amber-700'
                     }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        lic.status === 'active'
+                          ? 'bg-emerald-500'
+                          : lic.status === 'disabled'
+                          ? 'bg-gray-400'
+                          : 'bg-amber-500'
+                      }`} />
                       {lic.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 flex gap-2 flex-wrap">
-                    <button onClick={() => setViewLicense(lic)} className="text-sm text-blue-600 hover:text-blue-700">View</button>
-                    {lic.status === 'active' ? (
-                      <button onClick={() => handleDisable(lic)} className="text-sm text-orange-600 hover:text-orange-700">Disable</button>
-                    ) : (
-                      <button onClick={() => handleActivate(lic)} className="text-sm text-green-600 hover:text-green-700">Activate</button>
-                    )}
-                    <button onClick={() => handleDelete(lic)} className="text-sm text-red-600 hover:text-red-700">Delete</button>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        onClick={() => setViewLicense(lic)}
+                        className="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-xs font-medium px-2.5 py-1 rounded-md transition-colors"
+                      >
+                        View
+                      </button>
+                      {lic.status === 'active' ? (
+                        <button
+                          onClick={() => handleDisable(lic)}
+                          className="text-amber-600 bg-amber-50 hover:bg-amber-100 text-xs font-medium px-2.5 py-1 rounded-md transition-colors"
+                        >
+                          Disable
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleActivate(lic)}
+                          className="text-emerald-600 bg-emerald-50 hover:bg-emerald-100 text-xs font-medium px-2.5 py-1 rounded-md transition-colors"
+                        >
+                          Activate
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(lic)}
+                        className="text-red-600 bg-red-50 hover:bg-red-100 text-xs font-medium px-2.5 py-1 rounded-md transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {licenses.length === 0 && (
-            <p className="px-4 py-8 text-center text-gray-500">No licenses yet. Create one or generate JWT from All Company.</p>
+            <div className="px-5 py-12 text-center">
+              <div className="text-gray-400 mb-1">
+                <svg className="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </div>
+              <p className="text-sm text-gray-500">No licenses yet. Create one or generate JWT from the section below.</p>
+            </div>
           )}
         </div>
       )}
 
-      <div className="border-t pt-4">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Generate JWT License Key (for Product A activation)</h3>
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold text-gray-900">Generate JWT License Key</h3>
+          <p className="text-xs text-gray-500 mt-0.5">Generate a signed JWT key for Product A activation</p>
+        </div>
         <div className="flex flex-wrap gap-2">
           {companies.filter(c => c.status === 'active').map((c) => (
             <button
               key={c.id}
               onClick={() => handleGenerateJwt(c)}
-              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors"
             >
               {c.name}
             </button>
           ))}
+          {companies.filter(c => c.status === 'active').length === 0 && !loading && (
+            <p className="text-sm text-gray-400">No active companies available</p>
+          )}
         </div>
       </div>
 
@@ -264,97 +324,100 @@ function CreateLicenseModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto" onClick={onClose}>
-      <div
-        className="bg-white rounded-xl shadow-2xl max-w-lg w-full my-8 mx-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="px-6 py-5 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Create License</h3>
-          <p className="text-sm text-gray-500 mt-0.5">Define role-based allocation for the company</p>
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal__header">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Create License</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Define role-based allocation for the company</p>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Company *</label>
-            <select
-              {...register('company')}
-              className={`block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${errors.company ? 'border-red-500' : ''}`}
-            >
-              <option value="">Select Company</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            {errors.company && <p className="mt-1 text-sm text-red-600">{errors.company.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Product Name *</label>
-            <input
-              {...register('product_name')}
-              maxLength={100}
-              className={`block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${errors.product_name ? 'border-red-500' : ''}`}
-              placeholder="Minitab"
-            />
-            {errors.product_name && <p className="mt-1 text-sm text-red-600">{errors.product_name.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="admin-modal__body space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Purchase Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Company *</label>
+              <select
+                {...register('company')}
+                className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow bg-white ${errors.company ? 'border-red-300' : 'border-gray-200'}`}
+              >
+                <option value="">Select Company</option>
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              {errors.company && <p className="mt-1.5 text-xs text-red-600">{errors.company.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Product Name *</label>
               <input
-                type="date"
-                {...register('purchase_date')}
-                className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                {...register('product_name')}
+                maxLength={100}
+                className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow ${errors.product_name ? 'border-red-300' : 'border-gray-200'}`}
+                placeholder="Minitab"
+              />
+              {errors.product_name && <p className="mt-1.5 text-xs text-red-600">{errors.product_name.message}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Purchase Date</label>
+                <input
+                  type="date"
+                  {...register('purchase_date')}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Expiration Date</label>
+                <input
+                  type="date"
+                  {...register('expiration_date')}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow"
+                />
+              </div>
+            </div>
+
+            <RoleAllocationCard register={register} watch={watch} errors={errors} planLimit={planLimit} />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
+              <input
+                {...register('location')}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow"
+                placeholder="e.g. India"
+                maxLength={255}
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Expiration Date</label>
-              <input
-                type="date"
-                {...register('expiration_date')}
-                className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+              <textarea
+                {...register('description')}
+                rows={2}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow resize-none"
+                placeholder="Optional notes"
+                maxLength={500}
               />
             </div>
           </div>
-
-          <RoleAllocationCard register={register} watch={watch} errors={errors} planLimit={planLimit} />
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
-            <input
-              {...register('location')}
-              className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="e.g. India"
-              maxLength={255}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
-            <textarea
-              {...register('description')}
-              rows={2}
-              className="block w-full rounded-lg border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Optional notes"
-              maxLength={500}
-            />
-          </div>
-
-          <div className="flex gap-3 pt-2">
+          <div className="admin-modal__footer">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="flex-1 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !canSubmit}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating...' : 'Create'}
+              {loading ? 'Creating…' : 'Create'}
             </button>
           </div>
         </form>
@@ -380,33 +443,88 @@ function ViewLicenseModal({ license, onClose, onExtend }: { license: SL; onClose
     }
   }
 
+  const details = [
+    { label: 'License Key', value: <span className="font-mono text-gray-600 text-xs break-all">{license.license_key}</span> },
+    { label: 'Company', value: license.company_name },
+    { label: 'Product', value: license.product_name },
+    { label: 'Total User Access', value: license.total_user_access },
+    ...(license.role_limits ? [{
+      label: 'Role Allocation',
+      value: `Super Admins: ${license.role_limits.max_super_admins}, Admins: ${license.role_limits.max_company_admins}, Users: ${license.role_limits.max_users}`
+    }] : []),
+    { label: 'Purchase Date', value: license.purchase_date || '—' },
+    { label: 'Expiration', value: license.expiration_date ? new Date(license.expiration_date).toLocaleDateString() : '—' },
+    {
+      label: 'Status',
+      value: (
+        <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${
+          license.status === 'active'
+            ? 'bg-emerald-50 text-emerald-700'
+            : license.status === 'disabled'
+            ? 'bg-gray-100 text-gray-600'
+            : 'bg-amber-50 text-amber-700'
+        }`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            license.status === 'active'
+              ? 'bg-emerald-500'
+              : license.status === 'disabled'
+              ? 'bg-gray-400'
+              : 'bg-amber-500'
+          }`} />
+          {license.status}
+        </span>
+      ),
+    },
+  ]
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-semibold mb-4">License Details</h3>
-        <dl className="space-y-2 text-sm">
-          <div><dt className="text-gray-500">License Key</dt><dd className="font-mono">{license.license_key}</dd></div>
-          <div><dt className="text-gray-500">Company</dt><dd>{license.company_name}</dd></div>
-          <div><dt className="text-gray-500">Product</dt><dd>{license.product_name}</dd></div>
-          <div><dt className="text-gray-500">Total User Access</dt><dd>{license.total_user_access}</dd></div>
-          {license.role_limits && (
-            <div>
-              <dt className="text-gray-500">Role Allocation</dt>
-              <dd className="mt-1 text-gray-700">
-                Super Admins: {license.role_limits.max_super_admins}, Admins: {license.role_limits.max_company_admins}, Users: {license.role_limits.max_users}
-              </dd>
-            </div>
-          )}
-          <div><dt className="text-gray-500">Purchase Date</dt><dd>{license.purchase_date || '-'}</dd></div>
-          <div><dt className="text-gray-500">Expiration</dt><dd>{license.expiration_date ? new Date(license.expiration_date).toLocaleDateString() : '-'}</dd></div>
-          <div><dt className="text-gray-500">Status</dt><dd>{license.status}</dd></div>
-        </dl>
-        <div className="mt-4 pt-4 border-t flex items-center gap-2">
-          <input type="number" value={extendDays} onChange={(e) => setExtendDays(parseInt(e.target.value) || 30)} className="w-20 px-2 py-1 border rounded" />
-          <span className="text-sm text-gray-600">days</span>
-          <button onClick={handleExtend} disabled={extending} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">Extend</button>
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal__header">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">License Details</h3>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
-        <button onClick={onClose} className="mt-4 px-4 py-2 border rounded-md hover:bg-gray-50">Close</button>
+        <div className="admin-modal__body">
+          <dl className="space-y-3.5">
+            {details.map((d, i) => (
+              <div key={i} className="flex items-start justify-between gap-4">
+                <dt className="text-sm text-gray-400 shrink-0">{d.label}</dt>
+                <dd className="text-sm text-gray-900 text-right">{d.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Extend License</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                value={extendDays}
+                onChange={(e) => setExtendDays(parseInt(e.target.value) || 30)}
+                className="w-20 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow"
+              />
+              <span className="text-sm text-gray-500">days</span>
+              <button
+                onClick={handleExtend}
+                disabled={extending}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {extending ? 'Extending…' : 'Extend'}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="admin-modal__footer">
+          <button
+            onClick={onClose}
+            className="border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -421,14 +539,35 @@ function JwtModal({ company, licenseKey, onClose }: { company: Subscriber; licen
     setTimeout(() => setCopied(false), 2000)
   }
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-semibold mb-2">JWT License Generated</h3>
-        <p className="text-sm text-gray-500 mb-4">{company.name}</p>
-        <div className="bg-gray-100 rounded p-4 font-mono text-sm break-all mb-4">{licenseKey}</div>
-        <div className="flex gap-2">
-          <button onClick={copy} className="px-4 py-2 bg-blue-600 text-white rounded-md">{copied ? 'Copied!' : 'Copy'}</button>
-          <button onClick={onClose} className="px-4 py-2 border rounded-md hover:bg-gray-50">Close</button>
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal__header">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">JWT License Generated</h3>
+            <p className="text-sm text-gray-500 mt-0.5">{company.name}</p>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div className="admin-modal__body">
+          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 font-mono text-xs text-gray-700 break-all leading-relaxed select-all">
+            {licenseKey}
+          </div>
+        </div>
+        <div className="admin-modal__footer">
+          <button
+            onClick={onClose}
+            className="border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors"
+          >
+            Close
+          </button>
+          <button
+            onClick={copy}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors"
+          >
+            {copied ? 'Copied!' : 'Copy Key'}
+          </button>
         </div>
       </div>
     </div>
