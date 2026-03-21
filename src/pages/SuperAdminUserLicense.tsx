@@ -15,8 +15,6 @@ export default function SuperAdminUserLicense() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [viewLicense, setViewLicense] = useState<SL | null>(null)
-  const [generateFor, setGenerateFor] = useState<Subscriber | null>(null)
-  const [licenseKey, setLicenseKey] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -39,16 +37,6 @@ export default function SuperAdminUserLicense() {
   useEffect(() => {
     load()
   }, [])
-
-  const handleGenerateJwt = async (sub: Subscriber) => {
-    try {
-      const res = await companiesAPI.generateLicense(sub.id)
-      setGenerateFor(sub)
-      setLicenseKey(res.license_key)
-    } catch (e: unknown) {
-      toast.error(extractAuthError(e, 'Failed to generate license'))
-    }
-  }
 
   const handleActivate = async (lic: SL) => {
     try {
@@ -89,8 +77,17 @@ export default function SuperAdminUserLicense() {
           <p className="text-sm text-gray-500 mt-0.5">Software licenses and JWT keys for companies</p>
         </div>
         <button
-          onClick={() => setShowCreate(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors"
+          onClick={() => {
+            const activeCount = companies.filter((c) => c.status === 'active').length
+            if (activeCount === 0) {
+              toast.error('At least one company must be Active to create a license')
+              return
+            }
+            setShowCreate(true)
+          }}
+          title={companies.filter((c) => c.status === 'active').length === 0 ? 'Set a company to Active first (All Company)' : undefined}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={!loading && companies.filter((c) => c.status === 'active').length === 0}
         >
           + Create License
         </button>
@@ -197,36 +194,15 @@ export default function SuperAdminUserLicense() {
               <div className="text-gray-400 mb-1">
                 <svg className="w-10 h-10 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               </div>
-              <p className="text-sm text-gray-500">No licenses yet. Create one or generate JWT from the section below.</p>
+              <p className="text-sm text-gray-500">No licenses yet. Create one to get started.</p>
             </div>
           )}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <div className="mb-4">
-          <h3 className="text-sm font-semibold text-gray-900">Generate JWT License Key</h3>
-          <p className="text-xs text-gray-500 mt-0.5">Generate a signed JWT key for Product A activation</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {companies.filter(c => c.status === 'active').map((c) => (
-            <button
-              key={c.id}
-              onClick={() => handleGenerateJwt(c)}
-              className="border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors"
-            >
-              {c.name}
-            </button>
-          ))}
-          {companies.filter(c => c.status === 'active').length === 0 && !loading && (
-            <p className="text-sm text-gray-400">No active companies available</p>
-          )}
-        </div>
-      </div>
-
       {showCreate && (
         <CreateLicenseModal
-          companies={companies}
+          companies={companies.filter((c) => c.status === 'active')}
           plans={plans}
           onClose={() => setShowCreate(false)}
           onCreated={() => {
@@ -238,10 +214,6 @@ export default function SuperAdminUserLicense() {
 
       {viewLicense && (
         <ViewLicenseModal license={viewLicense} onClose={() => setViewLicense(null)} onExtend={() => { setViewLicense(null); load() }} />
-      )}
-
-      {generateFor && licenseKey && (
-        <JwtModal company={generateFor} licenseKey={licenseKey} onClose={() => { setGenerateFor(null); setLicenseKey(null) }} />
       )}
     </div>
   )
@@ -265,6 +237,7 @@ function CreateLicenseModal({
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<CreateLicenseFormValues>({
     resolver: yupResolver(createLicenseSchema),
@@ -277,10 +250,22 @@ function CreateLicenseModal({
       max_super_admins: 1,
       max_company_admins: 0,
       max_users: 10,
+      module_access: undefined,
       location: '',
       description: '',
     },
   })
+
+  const applyPlan = (plan: Plan) => {
+    setValue('max_super_admins', 1)
+    setValue('max_company_admins', 0)
+    setValue('max_users', Math.max(1, plan.max_users - 1))
+    if (plan.module_access && Object.keys(plan.module_access).length > 0) {
+      setValue('module_access', plan.module_access)
+    } else {
+      setValue('module_access', undefined)
+    }
+  }
 
   const companyId = watch('company')
   const selectedCompany = companies.find((c) => c.id === companyId)
@@ -311,6 +296,9 @@ function CreateLicenseModal({
       }
       if (data.purchase_date) payload.purchase_date = data.purchase_date
       if (data.expiration_date) payload.expiration_date = data.expiration_date
+      if (data.module_access && Object.keys(data.module_access).length > 0) {
+        payload.module_access = data.module_access
+      }
       if (data.location?.trim()) payload.location = data.location.trim().slice(0, 255)
       if (data.description?.trim()) payload.description = data.description.trim().slice(0, 500)
       await licensesAPI.create(payload)
@@ -348,7 +336,28 @@ function CreateLicenseModal({
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
+              <p className="mt-1 text-xs text-gray-500">Only Active companies are listed. Activate in All Company if needed.</p>
               {errors.company && <p className="mt-1.5 text-xs text-red-600">{errors.company.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Choose Plan</label>
+              <select
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow bg-white"
+                onChange={(e) => {
+                  const planId = e.target.value
+                  if (planId) {
+                    const plan = plans.find((p) => p.id === planId)
+                    if (plan) applyPlan(plan)
+                  }
+                }}
+              >
+                <option value="">Select plan (optional)</option>
+                {plans.filter((p) => p.is_active).map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} (max {p.max_users} users)</option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">Selecting a plan auto-fills role allocation and module access.</p>
             </div>
 
             <div>
@@ -530,46 +539,3 @@ function ViewLicenseModal({ license, onClose, onExtend }: { license: SL; onClose
   )
 }
 
-function JwtModal({ company, licenseKey, onClose }: { company: Subscriber; licenseKey: string; onClose: () => void }) {
-  const [copied, setCopied] = useState(false)
-  const copy = () => {
-    navigator.clipboard.writeText(licenseKey)
-    setCopied(true)
-    toast.success('Copied')
-    setTimeout(() => setCopied(false), 2000)
-  }
-  return (
-    <div className="admin-modal-overlay" onClick={onClose}>
-      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="admin-modal__header">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">JWT License Generated</h3>
-            <p className="text-sm text-gray-500 mt-0.5">{company.name}</p>
-          </div>
-          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-        <div className="admin-modal__body">
-          <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 font-mono text-xs text-gray-700 break-all leading-relaxed select-all">
-            {licenseKey}
-          </div>
-        </div>
-        <div className="admin-modal__footer">
-          <button
-            onClick={onClose}
-            className="border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium px-4 py-2 transition-colors"
-          >
-            Close
-          </button>
-          <button
-            onClick={copy}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium px-4 py-2 transition-colors"
-          >
-            {copied ? 'Copied!' : 'Copy Key'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}

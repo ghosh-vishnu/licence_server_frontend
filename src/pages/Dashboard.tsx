@@ -60,7 +60,6 @@ export default function Dashboard() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expiry</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
               </tr>
             </thead>
@@ -76,9 +75,6 @@ export default function Dashboard() {
                     }`}>
                       {c.status}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {new Date(c.expiry).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
                     <button

@@ -1125,10 +1125,20 @@ div[data-hot-toast] > div {
   box-shadow: var(--admin-shadow-lg);
   width: 100%;
   max-width: 520px;
-  max-height: 85vh;
+  max-height: 90vh;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   animation: adminModalIn 0.25s ease-out;
+  overflow: hidden;
+}
+
+.admin-modal form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .admin-modal__header {
@@ -1143,11 +1153,28 @@ div[data-hot-toast] > div {
 .admin-modal__body {
   padding: 20px 24px;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #e2e8f0;
 }
 
-.admin-modal__body::-webkit-scrollbar { width: 5px; }
-.admin-modal__body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 5px; }
+.admin-modal__body::-webkit-scrollbar {
+  width: 10px;
+}
+.admin-modal__body::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 5px;
+  margin: 4px 0;
+}
+.admin-modal__body::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 5px;
+}
+.admin-modal__body::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
 
 .admin-modal__footer {
   display: flex;

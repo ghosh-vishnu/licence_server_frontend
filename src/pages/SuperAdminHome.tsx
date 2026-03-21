@@ -52,9 +52,9 @@ export default function SuperAdminHome() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
-          [...Array(4)].map((_, i) => <StatSkeleton key={i} />)
+          [...Array(3)].map((_, i) => <StatSkeleton key={i} />)
         ) : (
           <>
             <Link to="/super-admin/company/all-company" className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-gray-300 transition-all group">
@@ -62,11 +62,6 @@ export default function SuperAdminHome() {
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats ? `${stats.active_companies}/${stats.total_companies}` : '—'}</p>
               <p className="text-xs text-gray-400 mt-1">Active / Total</p>
             </Link>
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <p className="text-sm text-gray-500">Expiring Soon</p>
-              <p className="text-2xl font-bold text-amber-600 mt-1">{stats?.expiring_soon ?? '—'}</p>
-              <p className="text-xs text-gray-400 mt-1">Next 30 days</p>
-            </div>
             <div className="bg-white rounded-xl border border-gray-200 p-5">
               <p className="text-sm text-gray-500">Suspended</p>
               <p className="text-2xl font-bold text-red-600 mt-1">{stats?.suspended_companies ?? '—'}</p>
@@ -101,7 +96,6 @@ export default function SuperAdminHome() {
                 <th className="px-5 py-2.5 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
                 <th className="px-5 py-2.5 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Code</th>
                 <th className="px-5 py-2.5 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-5 py-2.5 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Expiry</th>
               </tr>
             </thead>
             <tbody>
@@ -117,7 +111,6 @@ export default function SuperAdminHome() {
                       {c.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-sm text-gray-500">{new Date(c.expiry).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>

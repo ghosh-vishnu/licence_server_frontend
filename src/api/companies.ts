@@ -5,9 +5,19 @@ export interface Plan {
   name: string
   slug: string
   max_users: number
-  max_spreadsheets: number
-  max_storage_mb: number
+  module_access?: Record<string, string[]>
+  features?: Record<string, unknown>
   is_active: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+export interface CreatePlan {
+  name: string
+  max_users?: number
+  module_access?: Record<string, string[]>
+  features?: Record<string, unknown>
+  is_active?: boolean
 }
 
 export interface Subscriber {
@@ -25,7 +35,7 @@ export interface Subscriber {
   plan: string
   plan_name: string
   status: string
-  expiry: string
+  expiry?: string
   created_at: string
 }
 
@@ -74,7 +84,6 @@ export interface DashboardStats {
   total_companies: number
   active_companies: number
   suspended_companies: number
-  expiring_soon: number
 }
 
 export interface ProductModule {
@@ -96,11 +105,14 @@ export const companiesAPI = {
   update: (id: string, data: UpdateSubscriber) =>
     api.patch<Subscriber>(`/companies/${id}/`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/companies/${id}/`),
-  getPlans: () =>
-    api.get<Plan[] | { results: Plan[] }>('/plans/').then((r) => {
+  getPlans: (activeOnly?: boolean) =>
+    api.get<Plan[] | { results: Plan[] }>('/plans/', { params: activeOnly ? { active_only: 1 } : undefined }).then((r) => {
       const d = r.data
       return Array.isArray(d?.results) ? d.results : (Array.isArray(d) ? d : [])
     }),
+  createPlan: (data: CreatePlan) => api.post<Plan>('/plans/', data).then((r) => r.data),
+  updatePlan: (id: string, data: Partial<CreatePlan>) => api.patch<Plan>(`/plans/${id}/`, data).then((r) => r.data),
+  deletePlan: (id: string) => api.delete(`/plans/${id}/`),
   generateLicense: (id: string) =>
     api.post<GenerateLicenseResponse>(`/companies/${id}/generate-license/`).then((r) => r.data),
   getDashboard: () => api.get<DashboardStats>('/companies/dashboard/').then((r) => r.data),

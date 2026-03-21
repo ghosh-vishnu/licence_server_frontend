@@ -9,6 +9,12 @@ const nonNegativeInteger = yup
     return v === '' || v == null || isNaN(n) ? undefined : n
   })
 
+const moduleAccessSchema = yup.mixed().test(
+  'module-access-valid',
+  'Invalid module_access format',
+  (val) => val == null || val === undefined || (typeof val === 'object' && !Array.isArray(val))
+)
+
 export const createLicenseSchema = yup.object({
   company: yup.string().required('Company is required'),
   product_name: yup.string().trim().required('Product name is required').max(100),
@@ -17,6 +23,7 @@ export const createLicenseSchema = yup.object({
   max_super_admins: nonNegativeInteger.default(1),
   max_company_admins: nonNegativeInteger.required('Required').min(0),
   max_users: nonNegativeInteger.required('Required').min(1, 'At least 1 normal user required'),
+  module_access: moduleAccessSchema.nullable(),
   location: yup.string().trim().max(255).nullable(),
   description: yup.string().trim().max(500).nullable(),
 }).test(

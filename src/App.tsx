@@ -7,7 +7,9 @@ import SuperAdminHome from './pages/SuperAdminHome'
 import SuperAdminAllCompany from './pages/SuperAdminAllCompany'
 import SuperAdminUserLicense from './pages/SuperAdminUserLicense'
 import SuperAdminPlans from './pages/SuperAdminPlans'
-import SuperAdminPlaceholder from './pages/SuperAdminPlaceholder'
+import SuperAdminSubscriptions from './pages/SuperAdminSubscriptions'
+import SuperAdminTransactions from './pages/SuperAdminTransactions'
+import SuperAdminSettings from './pages/SuperAdminSettings'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -69,9 +71,9 @@ function App() {
           <Route path="super-admin/company/all-company" element={<SuperAdminAllCompany />} />
           <Route path="super-admin/company/user-license" element={<SuperAdminUserLicense />} />
           <Route path="super-admin/plans" element={<SuperAdminPlans />} />
-          <Route path="super-admin/subscriptions" element={<SuperAdminPlaceholder title="Subscriptions" />} />
-          <Route path="super-admin/transactions" element={<SuperAdminPlaceholder title="Transactions" />} />
-          <Route path="super-admin/settings" element={<SuperAdminPlaceholder title="Settings" />} />
+          <Route path="super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
+          <Route path="super-admin/transactions" element={<SuperAdminTransactions />} />
+          <Route path="super-admin/settings" element={<SuperAdminSettings />} />
         </Route>
         <Route path="*" element={isAuthenticated ? <Navigate to="/super-admin" replace /> : <Navigate to="/login" replace />} />
       </Routes>

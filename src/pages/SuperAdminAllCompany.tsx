@@ -2,6 +2,85 @@ import { useState, useEffect } from 'react'
 import { companiesAPI, Subscriber } from '../api/companies'
 import toast from 'react-hot-toast'
 
+/** Status badge classes - only Active and Inactive */
+function getStatusBadgeClasses(status: string) {
+  return status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'
+}
+function getStatusDotClasses(status: string) {
+  return status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'
+}
+
+const STATUS_OPTIONS: { value: string; label: string }[] = [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+]
+
+function StatusDropdown({
+  company,
+  onStatusChange,
+}: {
+  company: Subscriber
+  onStatusChange: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [updating, setUpdating] = useState(false)
+
+  const handleChange = async (newStatus: string) => {
+    if (newStatus === company.status) {
+      setOpen(false)
+      return
+    }
+    setUpdating(true)
+    try {
+      await companiesAPI.update(company.id, { status: newStatus })
+      toast.success(`Status updated to ${newStatus}`)
+      setOpen(false)
+      onStatusChange()
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || 'Failed to update status')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        disabled={updating}
+        title="Click to change status"
+        className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md capitalize cursor-pointer hover:ring-2 hover:ring-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 ${getStatusBadgeClasses(company.status)}`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotClasses(company.status)}`} />
+        {company.status === 'active' ? 'Active' : 'Inactive'}
+        <svg className="w-3 h-3 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden="true" />
+          <div className="absolute left-0 top-full mt-1 z-20 py-1 min-w-[140px] bg-white rounded-lg shadow-lg border border-gray-200">
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleChange(opt.value)}
+                className={`block w-full text-left px-3 py-2 text-sm capitalize hover:bg-gray-50 ${
+                  company.status === opt.value ? 'text-indigo-600 font-medium bg-indigo-50' : 'text-gray-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function SuperAdminAllCompany() {
   const [companies, setCompanies] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(true)
@@ -59,7 +138,6 @@ export default function SuperAdminAllCompany() {
               <div className="admin-skeleton h-3 w-12" />
               <div className="admin-skeleton h-3 w-14" />
               <div className="admin-skeleton h-3 w-14" />
-              <div className="admin-skeleton h-3 w-14" />
             </div>
           </div>
           {[...Array(5)].map((_, i) => (
@@ -67,8 +145,8 @@ export default function SuperAdminAllCompany() {
               <div className="admin-skeleton h-4 w-32" />
               <div className="admin-skeleton h-4 w-20" />
               <div className="admin-skeleton h-4 w-16" />
-              <div className="admin-skeleton h-4 w-24" />
               <div className="flex gap-2">
+                <div className="admin-skeleton h-6 w-10 rounded-md" />
                 <div className="admin-skeleton h-6 w-12 rounded-md" />
                 <div className="admin-skeleton h-6 w-14 rounded-md" />
               </div>
@@ -97,7 +175,6 @@ export default function SuperAdminAllCompany() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Code</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Expiry</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
@@ -107,22 +184,16 @@ export default function SuperAdminAllCompany() {
                   <td className="px-6 py-3.5 text-sm font-medium text-gray-900">{c.name}</td>
                   <td className="px-6 py-3.5 text-sm text-gray-500">{c.company_code || '-'}</td>
                   <td className="px-6 py-3.5">
-                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${
-                      c.status === 'active'
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        c.status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'
-                      }`} />
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3.5 text-sm text-gray-500">
-                    {new Date(c.expiry).toLocaleDateString()}
+                    <StatusDropdown company={c} onStatusChange={load} />
                   </td>
                   <td className="px-6 py-3.5">
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setViewing(c)}
+                        className="text-xs font-medium px-2.5 py-1 rounded-md text-gray-700 bg-gray-50 hover:bg-gray-100 transition-colors"
+                      >
+                        View
+                      </button>
                       <button
                         onClick={() => setEditing(c)}
                         className="text-xs font-medium px-2.5 py-1 rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
@@ -194,7 +265,6 @@ function ViewCompanyModal({
   }, [company.id])
 
   const d = data as Subscriber & { address_line1?: string; GST_NO?: string }
-  const showExpiry = d?.expiry ?? company.expiry
   return (
     <div className="admin-modal-overlay" onClick={onClose}>
       <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
@@ -233,15 +303,12 @@ function ViewCompanyModal({
               <div>
                 <dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Status</dt>
                 <dd className="mt-1">
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${
-                    d.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${d.status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-                    {d.status}
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${getStatusBadgeClasses(d.status)}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotClasses(d.status)}`} />
+                    {d.status === 'active' ? 'Active' : 'Inactive'}
                   </span>
                 </dd>
               </div>
-              <div><dt className="text-xs font-medium text-gray-400 uppercase tracking-wider">Expiry</dt><dd className="text-sm text-gray-700 mt-0.5">{showExpiry ? new Date(showExpiry).toLocaleDateString() : '-'}</dd></div>
             </dl>
           ) : null}
         </div>
@@ -271,6 +338,7 @@ function CreateCompanyModal({
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
   const [adminConfirmPassword, setAdminConfirmPassword] = useState('')
+  const [status, setStatus] = useState<'active' | 'inactive'>('active')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -297,6 +365,7 @@ function CreateCompanyModal({
         admin_email: adminEmail.trim() || undefined,
         admin_password: adminPassword || undefined,
         admin_confirm_password: adminConfirmPassword || undefined,
+        status,
       })
       toast.success('Company created')
       onCreated()
@@ -369,6 +438,13 @@ function CreateCompanyModal({
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClasses} placeholder="company@example.com" />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className={inputClasses}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Admin Email</label>
               <input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className={inputClasses} placeholder="company@example.com" />
             </div>
@@ -409,7 +485,7 @@ function EditCompanyModal({
   const [timeZone, setTimeZone] = useState(company.time_zone || 'Asia/Kolkata')
   const [taxId, setTaxId] = useState(company.tax_id || '')
   const [adminEmail, setAdminEmail] = useState(company.admin_email || '')
-  const [status, setStatus] = useState(company.status)
+  const [status, setStatus] = useState<'active' | 'inactive'>(company.status === 'active' ? 'active' : 'inactive')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -497,11 +573,9 @@ function EditCompanyModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClasses}>
+              <select value={status} onChange={(e) => setStatus(e.target.value as 'active' | 'inactive')} className={inputClasses}>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-                <option value="suspended">Suspended</option>
-                <option value="cancelled">Cancelled</option>
               </select>
             </div>
           </div>
